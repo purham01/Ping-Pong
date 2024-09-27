@@ -4,6 +4,7 @@
 #include "ball.h"
 #include "paddle.h"
 #include "score.h"
+#include "popup_text.h"
 
 using namespace std;
 
@@ -45,6 +46,9 @@ void Game::InitGame(void)
     ball.win_sfx = LoadSound("resources/win.wav");
     
     ball.ResetBall();
+
+    text1 = PopupText("PING!");
+    text2 = PopupText("PONG!");
 }
 
 void Game::Gameplay(void)
@@ -69,9 +73,11 @@ void Game::Gameplay(void)
             if (ball.speed_x < 40) //increase ball speed with each bounce, if speed reaches 30, the player who scores gets 10 points instead of one (starting speed 10, max 40)
                 ball.speed_x += 1;
 
-            ball.speed_y = (ball.y - player1.height/2 - player1.y)/(player1.height)*8; //bounce depending on the distance from middle of paddle
+            ball.speed_y = (ball.y - player1.height/2 - player1.y)/(player1.height)*10; //bounce depending on the distance from middle of paddle
             
+            //effects
             PlaySound(sfx1);
+            text1.Spawn(ball.x+20 + GetRandomValue(0,40), ball.y + GetRandomValue(-20,20));
         }
 
         if(CheckCollisionCircleRec(Vector2{(float)ball.x, (float)ball.y}, ball.radius, 
@@ -81,9 +87,11 @@ void Game::Gameplay(void)
             if (ball.speed_x > -40)
                 ball.speed_x -= 1;
 
-            ball.speed_y = (ball.y - player2.height/2 - player2.y)/(player2.height/2)*8;
+            ball.speed_y = (ball.y - player2.height/2 - player2.y)/(player2.height/2)*10;
+
 
             PlaySound(sfx2);
+            text2.Spawn(ball.x-60 + GetRandomValue(0,-40), ball.y+GetRandomValue(-20,20));
         }
     }
 }
@@ -184,6 +192,10 @@ void Game::DrawGame(void)
             //controls for the first 10 seconds
             DrawUI();
 
+            //popups
+            text1.Draw();
+            text2.Draw();
+
             //gameplay
             ball.Draw();
             player1.Draw();
@@ -204,7 +216,7 @@ void Game::DrawGame(void)
 
 void Game::DrawUI(void)
 {
-    
+    //UI controls
     if (framesCounter < 10*60){
         DrawText("W", 80, player1.y - 40, 70, LIGHTGRAY); //300
         DrawText("S", 80, player1.y + 80, 70, LIGHTGRAY);        //420
@@ -228,6 +240,7 @@ void Game::DrawUI(void)
 
 void Game::DrawCounter(void)
 {
+    //UI counter
     if (framesCounter < 60) DrawText("3", screen_width/2 - 20, screen_height/2 - 40, 80, WHITE);
     else if (framesCounter < 120) DrawText("2", screen_width/2 - 20, screen_height/2 - 40, 80, WHITE);
     else if (framesCounter < 180) DrawText("1", screen_width/2 - 10, screen_height/2 - 40, 80, WHITE);

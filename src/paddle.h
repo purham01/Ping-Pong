@@ -5,6 +5,7 @@ class Paddle : public GameObject {
     protected:
         void LimitMovement();
 
+
     public:
         float width, height;
         int speed;
@@ -24,6 +25,10 @@ class Player1Paddle: public Paddle{
 };
 
 class Player2Paddle: public Paddle{
+    private:
+        int framesCounter = 0;
+        int destination = 0;
+        
     public:
         void Update();
         void UpdateAI(int ball_x, int ball_y, int ball_speed_x);

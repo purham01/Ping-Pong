@@ -4,6 +4,7 @@
 #include "ball.h"
 #include "paddle.h"
 #include "score.h"
+#include "popup_text.h"
 
 class Game{
     private:
@@ -17,6 +18,8 @@ class Game{
         Player2Paddle player2;
         Sound sfx1,sfx2;
         Score player1_score, player2_score;
+        PopupText text1, text2;
+
 
         //game variables
         bool gameType = 0;

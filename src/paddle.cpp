@@ -42,14 +42,29 @@ void Player2Paddle::Update(){
 
 void Player2Paddle::UpdateAI(int ball_x, int ball_y, int ball_speed_x)
 {   
+    framesCounter++;
     if((ball_speed_x > 0 && ball_x >= GetScreenWidth()/4) || (ball_speed_x < 0 && ball_x <= 3*GetScreenWidth()/4))
     {
+        if(framesCounter > 15){
+            if(y + height/2 > ball_y ){
+                destination = ball_y - GetRandomValue(0,height/2);
+            }
+
+            else if(y + height/2 < ball_y ){
+                destination = ball_y + GetRandomValue(0,height/2);
+            }
+            else
+                destination = y;
+            framesCounter = 0;
+        }
         
-        if(y + height/2 > ball_y - GetRandomValue(0,height/2)){
+        
+        
+        if(y + height/2 > destination){
             y = y - speed;
         }
 
-        if(y+height/2 <= ball_y + GetRandomValue(0,height/2)){
+        if(y+height/2 <= destination){
             y = y + speed;
         }
 
