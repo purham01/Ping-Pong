@@ -5,7 +5,6 @@
 #include "paddle.h"
 #include "score.h"
 #include "popup_text.h"
-#include "explosion.h"
 
 class Game{
     private:
