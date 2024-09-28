@@ -1,6 +1,6 @@
 ## Pong!
 
-![Pong!](screenshots/screenshot1.png "Pong!")
+![Pong!](screenshots/screenshot0.png "Pong!")
 
 ### Description
 
@@ -23,5 +23,5 @@ Player 2:
 
 ### Screenshots
 
-![Pong!](screenshots/screenshot0.png "Main menu")
+![Pong!](screenshots/screenshot1.png "Main menu")
 ![Pong!](screenshots/screenshot2.png "GameStart")
