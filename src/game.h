@@ -5,6 +5,7 @@
 #include "paddle.h"
 #include "score.h"
 #include "popup_text.h"
+#include "explosion.h"
 
 class Game{
     private:
@@ -20,29 +21,35 @@ class Game{
         Score player1_score, player2_score;
         PopupText text1, text2;
 
-
         //game variables
         bool gameType = 0;
         int player2_speed = 6;
         int framesCounter = 0;
         GameScreen currentScreen = MAIN_MENU;
 
-
         // Initialise game
         void InitGame(void); 
         // Update game (one frame)
         void UpdateGame(void);   
+        //Gameplay loop
+        void Gameplay(void);
+        void MainMenu(void);
+        void Difficulty(void);
+        void CheckForCollisions(void);
+        void GoToGameplay(void);
+
         // Draw game (one frame)
         void DrawGame(void);         
-        // Unload game
-        void UnloadGame(void);      
-        // Update and Draw (one frame)
-        void UpdateDrawFrame(void);  
+        void DrawGameplay(void);
+        void DrawMainMeu(void);
+        void DrawDifficulty(void);
         //UI
         void DrawUI(void);
         void DrawCounter(void);
-        //Gameplay loop
-        void Gameplay(void);
+        void DrawBackground(void);
+
+        // Unload game
+        void UnloadGame(void);      
 
     public:
         //default constructor

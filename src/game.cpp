@@ -5,6 +5,7 @@
 #include "paddle.h"
 #include "score.h"
 #include "popup_text.h"
+#include "explosion.h"
 
 using namespace std;
 
@@ -17,7 +18,8 @@ void Game::StartGame(void){
 
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
-        UpdateDrawFrame();
+        UpdateGame();
+        DrawGame();
     }
 
     UnloadGame();         // Unload loaded data (textures, sounds, models)
@@ -49,6 +51,33 @@ void Game::InitGame(void)
 
     text1 = PopupText("PING!");
     text2 = PopupText("PONG!");
+
+}
+
+void Game::UpdateGame(void)
+{
+    //simple scene manager
+    switch (currentScreen)
+    {
+        case MAIN_MENU:
+        {
+            MainMenu();
+        }
+        break;
+
+        //difficulty selection for PvE
+        case DIFFICULTY:
+        {
+            Difficulty();
+        }
+        break;
+
+        //gameplay loop
+        case GAMEPLAY: 
+        {   
+            Gameplay();
+        }
+    }
 }
 
 void Game::Gameplay(void)
@@ -65,171 +94,169 @@ void Game::Gameplay(void)
         else
             player2.UpdateAI(ball.x,ball.y,ball.speed_x);
 
-        //Checking for collisions
-        if(CheckCollisionCircleRec(Vector2{(float)ball.x, (float)ball.y}, ball.radius, 
-        Rectangle{player1.x, player1.y, player1.width, player1.height})){        
-            ball.speed_x *= -1;
-
-            if (ball.speed_x < 40) //increase ball speed with each bounce, if speed reaches 30, the player who scores gets 10 points instead of one (starting speed 10, max 40)
-                ball.speed_x += 1;
-
-            ball.speed_y = (ball.y - player1.height/2 - player1.y)/(player1.height)*10; //bounce depending on the distance from middle of paddle
-            
-            //effects
-            PlaySound(sfx1);
-            text1.Spawn(ball.x+20 + GetRandomValue(0,40), ball.y + GetRandomValue(-20,20));
-        }
-
-        if(CheckCollisionCircleRec(Vector2{(float)ball.x, (float)ball.y}, ball.radius, 
-        Rectangle{player2.x, player2.y, player2.width, player2.height})){
-            ball.speed_x *= -1;
-
-            if (ball.speed_x > -40)
-                ball.speed_x -= 1;
-
-            ball.speed_y = (ball.y - player2.height/2 - player2.y)/(player2.height/2)*10;
-
-
-            PlaySound(sfx2);
-            text2.Spawn(ball.x-60 + GetRandomValue(0,-40), ball.y+GetRandomValue(-20,20));
-        }
+        CheckForCollisions();
     }
 }
 
-void Game::UpdateGame(void)
+void Game::MainMenu(void)
 {
-    //simple scene manager
-    switch (currentScreen)
+    if (IsKeyPressed(KEY_Q))
     {
-        case MAIN_MENU:
-        {
-            if (IsKeyPressed(KEY_Q))
-            {
-                gameType = 1;
-                InitGame();
-                currentScreen = GAMEPLAY;
-            }
-
-            if (IsKeyPressed(KEY_E))
-            {
-                gameType = 0;
-                currentScreen = DIFFICULTY;
-            }
-        }
-        break;
-
-        //difficulty selection for PvE
-        case DIFFICULTY:
-        {
-            if (IsKeyPressed(KEY_Q))
-            {
-                player2_speed = 2;
-                InitGame();
-                currentScreen = GAMEPLAY;
-            }
-
-            if (IsKeyPressed(KEY_W))
-            {
-                player2_speed = 4;
-                InitGame();
-                currentScreen = GAMEPLAY;
-            }
-
-            if (IsKeyPressed(KEY_E))
-            {
-                player2_speed = 6;
-                InitGame();
-                currentScreen = GAMEPLAY;
-            }
-
-        }
-        break;
-
-        //gameplay loop
-        case GAMEPLAY: 
-        {   
-            Gameplay();
-        }
+        gameType = 1;
+        GoToGameplay();
     }
 
-    
-
+    if (IsKeyPressed(KEY_E))
+    {
+        gameType = 0;
+        currentScreen = DIFFICULTY;
+    }
 }
+
+void Game::Difficulty(void)
+{
+    if (IsKeyPressed(KEY_Q))
+    {
+        player2_speed = 2;
+        GoToGameplay();
+    }
+
+    if (IsKeyPressed(KEY_W))
+    {
+        player2_speed = 4;
+        GoToGameplay();
+    }
+
+    if (IsKeyPressed(KEY_E))
+    {
+        player2_speed = 6;
+        GoToGameplay();
+    }
+}
+
+void Game::GoToGameplay(void)
+{
+    InitGame();
+    currentScreen = GAMEPLAY;
+}
+
+void Game::CheckForCollisions(void)
+{
+    //Checking for collisions
+    if(CheckCollisionCircleRec(Vector2{(float)ball.x, (float)ball.y}, ball.radius, 
+    Rectangle{player1.x, player1.y, player1.width, player1.height})){        
+        ball.speed_x *= -1;
+
+        if (ball.speed_x < 40) //increase ball speed with each bounce, if speed reaches 30, the player who scores gets 10 points instead of one (starting speed 10, max 40)
+            ball.speed_x += 1;
+
+        ball.speed_y = (ball.y - player1.height/2 - player1.y)/(player1.height)*10; //bounce depending on the distance from middle of paddle
+        
+        //effects
+        PlaySound(sfx1);
+        text1.Spawn(ball.x+20 + GetRandomValue(0,40), ball.y + GetRandomValue(-20,20));
+    }
+
+    if(CheckCollisionCircleRec(Vector2{(float)ball.x, (float)ball.y}, ball.radius, 
+    Rectangle{player2.x, player2.y, player2.width, player2.height})){
+        ball.speed_x *= -1;
+
+        if (ball.speed_x > -40)
+            ball.speed_x -= 1;
+
+        ball.speed_y = (ball.y - player2.height/2 - player2.y)/(player2.height/2)*10;
+
+
+        PlaySound(sfx2);
+        text2.Spawn(ball.x-60 + GetRandomValue(0,-40), ball.y+GetRandomValue(-20,20));
+    }
+}
+
+
 
 void Game::DrawGame(void)
 {
     BeginDrawing();
 
-    //background
-    ClearBackground(Color{51, 63, 88, 255});
-    DrawRectangle(screen_width/2, 0, screen_width/2, screen_height,  Color{74, 122, 150, 255});
-    DrawCircle(screen_width/2, screen_height/2, 150, Color{110, 181, 204, 255});
-    DrawLine(screen_width/2, 0, screen_width/2, screen_height, WHITE);
-
+    DrawBackground();
 
     switch (currentScreen)
     {
         case MAIN_MENU:
         {
-            DrawText("PONG!", 40, 40, 60, WHITE);
-            DrawText("Q - PLAY PvP", 120, 220, 40, WHITE);
-            DrawText("E - PLAY PvE", 120, 270, 40, WHITE);
-            DrawText("ESC - QUIT", 120, 320, 40, WHITE);
+            DrawMainMeu();
         }
         break;
 
         case DIFFICULTY:
         {
-            DrawText("PONG!", 40, 40, 60, WHITE);
-            DrawText("Q - EASY", 120, 220, 40, WHITE);
-            DrawText("W - NORMAL", 120, 270, 40, WHITE);
-            DrawText("E - HARD", 120, 320, 40, WHITE);
+            DrawDifficulty();
         }
         break;
 
         case GAMEPLAY: 
         {
-            //controls for the first 10 seconds
-            DrawUI();
-
-            //popups
-            text1.Draw();
-            text2.Draw();
-
-            //gameplay
-            ball.Draw();
-            player1.Draw();
-            player2.Draw();
-            
-            //score
-            player1_score.Draw();
-            player2_score.Draw();
-
-            //drawing intro countdown
-            DrawCounter();
+            DrawGameplay();
         }
     }
     
-
     EndDrawing();
+}
+
+void Game::DrawGameplay(void)
+{
+    //controls for the first 10 seconds
+    DrawUI();
+
+    //popups
+    text1.Draw();
+    text2.Draw();
+
+    //gameplay
+    ball.Draw();
+    player1.Draw();
+    player2.Draw();
+    
+    //score
+    player1_score.Draw();
+    player2_score.Draw();
+
+    //drawing intro countdown
+    DrawCounter();
+}
+
+void Game::DrawMainMeu(void)
+{
+    DrawText("PONG!", 40, 40, 60, WHITE);
+    DrawText("Q - PLAY PvP", 120, 220, 40, WHITE);
+    DrawText("E - PLAY PvE", 120, 270, 40, WHITE);
+    DrawText("ESC - QUIT", 120, 320, 40, WHITE);
+}
+
+void Game::DrawDifficulty(void)
+{
+    DrawText("PONG!", 40, 40, 60, WHITE);
+    DrawText("Q - EASY", 120, 220, 40, WHITE);
+    DrawText("W - NORMAL", 120, 270, 40, WHITE);
+    DrawText("E - HARD", 120, 320, 40, WHITE);
 }
 
 void Game::DrawUI(void)
 {
     //UI controls
-    if (framesCounter < 10*60){
+    if (framesCounter < 10*60){ //shows controls for first 10 seconds
         DrawText("W", 80, player1.y - 40, 70, LIGHTGRAY); //300
-        DrawText("S", 80, player1.y + 80, 70, LIGHTGRAY);        //420
+        DrawText("S", 80, player1.y + 80, 70, LIGHTGRAY); //420
 
         if (gameType) //only shown in PvP
         {
             DrawTriangle((Vector2){ screen_width -100.0f , player2.y - 40 }, //300
-                    (Vector2){ screen_width -120.0f , player2.y },      //340
+                    (Vector2){ screen_width -120.0f , player2.y },           //340
                     (Vector2){ screen_width -80.0f , player2.y }, LIGHTGRAY);
             DrawRectangle(screen_width -105.0f,player2.y, 10, 30, LIGHTGRAY);
 
         
-            DrawTriangle((Vector2){ screen_width -120.0f , player2.y + 110 }, //450
+            DrawTriangle((Vector2){ screen_width -120.0f , player2.y + 110 },   //450
                     (Vector2){ screen_width -100.0f , player2.y + 150 },         //490
                     (Vector2){ screen_width -80.0f , player2.y + 110  }, LIGHTGRAY);
             DrawRectangle(screen_width -105.0f,player2.y + 80, 10, 30, LIGHTGRAY); //420
@@ -247,6 +274,15 @@ void Game::DrawCounter(void)
     else if (framesCounter < 240) DrawText("GO!", screen_width/2 - 55, screen_height/2 - 40, 80, WHITE);
 }
 
+void Game::DrawBackground(void)
+{
+    //background
+    ClearBackground(Color{51, 63, 88, 255});
+    DrawRectangle(screen_width/2, 0, screen_width/2, screen_height,  Color{74, 122, 150, 255});
+    DrawCircle(screen_width/2, screen_height/2, 150, Color{110, 181, 204, 255});
+    DrawLine(screen_width/2, 0, screen_width/2, screen_height, WHITE);
+}
+
 
 // Unload game variables
 void Game::UnloadGame(void)
@@ -258,12 +294,6 @@ void Game::UnloadGame(void)
     }
 }
 
-// Update and Draw (one frame)
-void Game::UpdateDrawFrame()
-{
-    UpdateGame();
-    DrawGame();
-}
 
 
 
